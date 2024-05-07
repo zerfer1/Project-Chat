@@ -18,3 +18,24 @@ async def main():
 
     msg_box = output()
     put_scrollable(msg_box, height=300, keep_bottom=True)
+
+    nickname = await input("Войти в чат", required=True, placeholder="Ваше имя",
+                           validate=lambda n: "Такой ник уже используется!" if n in online_users or n == '📢' else None)
+    online_users.add(nickname)
+
+    chat_msgs.append(('📢', f'`{nickname}` присоединился к чату!'))
+    msg_box.append(put_markdown(f'📢 `{nickname}` присоединился к чату'))
+
+    refresh_task = run_async(refresh_msg(nickname, msg_box))
+
+    while True:
+        data = await input_group("💭 Новое сообщение", [
+            input(placeholder="Текст сообщения ...", name="msg"),
+            actions(name="cmd", buttons=["Отправить", {'label': "Выйти из чата", 'type': 'cancel'}])
+        ], validate=lambda m: ('msg', "Введите текст сообщения!") if m["cmd"] == "Отправить" and not m['msg'] else None)
+
+        if data is None:
+            break
+
+        msg_box.append(put_markdown(f"`{nickname}`: {data['msg']}"))
+        chat_msgs.append((nickname, data['msg']))
