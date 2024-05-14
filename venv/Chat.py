@@ -39,3 +39,24 @@ async def main():
 
         msg_box.append(put_markdown(f"`{nickname}`: {data['msg']}"))
         chat_msgs.append((nickname, data['msg']))
+
+    refresh_task.close()
+
+    online_users.remove(nickname)
+    toast("Вы вышли из чата!")
+    msg_box.append(put_markdown(f'📢 Пользователь `{nickname}` покинул чат!'))
+    chat_msgs.append(('📢', f'Пользователь `{nickname}` покинул чат!'))
+
+    put_buttons(['Перезайти'], onclick=lambda btn: run_js('window.location.reload()'))
+
+
+async def refresh_msg(nickname, msg_box):
+    global chat_msgs
+    last_idx = len(chat_msgs)
+
+    while True:
+        await asyncio.sleep(1)
+
+        for m in chat_msgs[last_idx:]:
+            if m[0] != nickname:  # if not a message from current user
+                msg_box.append(put_markdown(f"`{m[0]}`: {m[1]}"))
